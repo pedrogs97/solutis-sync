@@ -60,8 +60,8 @@ COPY --from=builder /solutis-sync/.venv /solutis-sync/.venv
 # Copy application source code
 COPY ./src /solutis-sync/src
 
-# Expose port 8002
-EXPOSE 8002
+# Expose port 8003
+EXPOSE 8003
 
 # Run application directly using the virtualenv's uvicorn
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8002", "--workers", "2"]
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8003", "--workers", "2"]
