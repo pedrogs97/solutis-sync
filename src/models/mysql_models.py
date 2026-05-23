@@ -129,5 +129,5 @@ class SyncRecord(SQLModel, table=True):
         default=None, sa_column_kwargs={"server_default": func.now()}
     )
     count_new_values: int
-    model: str | None = Field(default="employee", max_length=50)
+    model: str | None = Field(default="", max_length=50)
     execution_time: float

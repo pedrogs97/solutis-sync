@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  solutis-sync:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./src:/solutis-sync/src
+      - ./logs:/solutis-sync/logs
+      - ./.env:/solutis-sync/.env
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8002 --workers 2
+    restart: always
+    env_file:
+      - ./.env
+    networks:
+      - agile-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/api/v1/sync/health')"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+
+networks:
+  agile-network:
+    external: true

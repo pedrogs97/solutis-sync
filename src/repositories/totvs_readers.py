@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from datetime import datetime
+from typing import Any
 
 from loguru import logger
 
@@ -35,12 +36,14 @@ from schemas.entities import (
 # ── Helpers ──────────────────────────────────────────────────────────
 
 
-def _safe(row: dict, key: str, default: str = "") -> str:
+def _safe(row: dict[str, Any], key: str, default: str = "") -> str:
+    """Safe access to row values."""
     v = row.get(key)
     return str(v).strip() if v is not None else default
 
 
 def _get_pattern(description: str, pattern: str | None) -> str:
+    """Get pattern from description."""
     pattern_map: dict[str, str] = {
         "001": "PADRÃO STUDIO",
         "002": "PADRÃO ESCRITÓRIO",
@@ -53,6 +56,7 @@ def _get_pattern(description: str, pattern: str | None) -> str:
 
 
 def _get_accessories(raw: str | None) -> str:
+    """Get accessories from raw value."""
     acc_map: dict[str, str] = {
         "001": "CARREGADOR",
         "002": "FONTE DE ENERGIA",
@@ -65,7 +69,8 @@ def _get_accessories(raw: str | None) -> str:
     return acc_map.get(raw, "")
 
 
-async def _fetch_rows(sql: str) -> list[dict]:
+async def _fetch_rows(sql: str) -> list[dict[str, Any]]:
+    """Fetch rows from SQL Server."""
     async with get_mssql_cursor() as cursor:
         await cursor.execute(sql)
         columns: list[str] = [col[0] for col in cursor.description]
@@ -77,7 +82,10 @@ async def _fetch_rows(sql: str) -> list[dict]:
 
 
 class EmployeeReader:
+    """Employee reader - SQL Server."""
+
     async def fetch_all(self) -> Sequence[Employee]:
+        """Fetch all employees."""
         rows = await _fetch_rows(SQL_PPESSOA)
         results: list[Employee] = []
         for r in rows:
@@ -121,7 +129,10 @@ class EmployeeReader:
 
 
 class MaritalStatusReader:
+    """Marital status reader - SQL Server."""
+
     async def fetch_all(self) -> Sequence[MaritalStatus]:
+        """Fetch all marital statuses."""
         rows = await _fetch_rows(SQL_PCODESTCIVIL)
         return [
             MaritalStatus(code=_safe(r, "CODINTERNO"), description=_safe(r, "DESCRICAO"))
@@ -130,7 +141,10 @@ class MaritalStatusReader:
 
 
 class GenderReader:
+    """Gender reader - SQL Server."""
+
     async def fetch_all(self) -> Sequence[Gender]:
+        """Fetch all genders."""
         rows = await _fetch_rows(SQL_PCODSEXO)
         return [
             Gender(code=_safe(r, "CODINTERNO"), description=_safe(r, "DESCRICAO")) for r in rows
@@ -138,7 +152,10 @@ class GenderReader:
 
 
 class NationalityReader:
+    """Nationality reader - SQL Server."""
+
     async def fetch_all(self) -> Sequence[Nationality]:
+        """Fetch all nationalities."""
         rows = await _fetch_rows(SQL_PCODNACAO)
         return [
             Nationality(code=_safe(r, "CODINTERNO"), description=_safe(r, "DESCRICAO"))
@@ -147,7 +164,10 @@ class NationalityReader:
 
 
 class EducationalLevelReader:
+    """Educational level reader - SQL Server."""
+
     async def fetch_all(self) -> Sequence[EducationalLevel]:
+        """Fetch all educational levels."""
         rows = await _fetch_rows(SQL_PCODINSTRUCAO)
         return [
             EducationalLevel(code=_safe(r, "CODINTERNO"), description=_safe(r, "DESCRICAO"))
@@ -156,13 +176,19 @@ class EducationalLevelReader:
 
 
 class EmployeeRoleReader:
+    """Employee role reader - SQL Server."""
+
     async def fetch_all(self) -> Sequence[EmployeeRole]:
+        """Fetch all employee roles."""
         rows = await _fetch_rows(SQL_PFUNCAO)
         return [EmployeeRole(code=_safe(r, "CODIGO"), name=_safe(r, "NOME")) for r in rows]
 
 
 class CostCenterReader:
+    """Cost center reader - SQL Server."""
+
     async def fetch_all(self) -> Sequence[CostCenter]:
+        """Fetch all cost centers."""
         rows = await _fetch_rows(SQL_GCCUSTO)
         return [
             CostCenter(
@@ -175,7 +201,10 @@ class CostCenterReader:
 
 
 class AssetTypeReader:
+    """Asset type reader - SQL Server."""
+
     async def fetch_all(self) -> Sequence[AssetType]:
+        """Fetch all asset types."""
         rows = await _fetch_rows(SQL_IGRUPOPATRIMONIO)
         return [
             AssetType(
@@ -188,7 +217,10 @@ class AssetTypeReader:
 
 
 class AssetReader:
+    """Asset reader - SQL Server."""
+
     async def fetch_all(self) -> Sequence[Asset]:
+        """Fetch all assets."""
         rows = await _fetch_rows(SQL_IPATRIMONIO)
         results: list[Asset] = []
         for r in rows:
@@ -235,6 +267,7 @@ class AssetExistenceChecker:
     """Checks whether an asset still exists in TOTVS."""
 
     async def exists(self, code: str) -> bool:
+        """Check if asset exists."""
         async with get_mssql_cursor() as cursor:
             await cursor.execute(SQL_IPATRIMONIO_EXISTS, (code,))
             row = await cursor.fetchone()

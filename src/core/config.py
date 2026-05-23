@@ -2,15 +2,18 @@
 
 from __future__ import annotations
 
+import os
 from functools import lru_cache
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    """Application settings - loaded from environment / .env file."""
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
-    # ── MySQL (monolith) ─────────────────────────────────────────────
+    # ── MySQL ─────────────────────────────────────────────
     mysql_user: str = "root"
     mysql_password: str = ""
     mysql_host: str = "127.0.0.1"
@@ -23,12 +26,14 @@ class Settings(BaseSettings):
     )
 
     # ── Scheduler ────────────────────────────────────────────────────
-    sync_cron_hour: int = 3
+    sync_cron_hour: str = "3"
     sync_cron_minute: int = 0
+    sync_cron_week: str = ""
 
     # ── App ──────────────────────────────────────────────────────────
     app_name: str = "solutis-sync"
     log_level: str = "INFO"
+    base_dir: str = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
     @property
     def mysql_dsn(self) -> str:
@@ -40,4 +45,5 @@ class Settings(BaseSettings):
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
-    return Settings()  # type: ignore[call-arg]
+    """Get application settings."""
+    return Settings()

@@ -33,6 +33,7 @@ async def init_mysql_tables() -> None:
 
 @asynccontextmanager
 async def get_mysql_session() -> AsyncGenerator[SQLModelAsyncSession]:
+    """Get a MySQL async session."""
     async with SQLModelAsyncSession(mysql_engine, expire_on_commit=False) as session:
         yield session
 
@@ -42,6 +43,7 @@ async def get_mysql_session() -> AsyncGenerator[SQLModelAsyncSession]:
 
 @asynccontextmanager
 async def get_mssql_connection() -> AsyncGenerator[aioodbc.Connection]:
+    """Get a SQL Server async connection."""
     conn = await aioodbc.connect(dsn=_settings.mssql_dsn, autocommit=True)
     try:
         yield conn
@@ -51,6 +53,7 @@ async def get_mssql_connection() -> AsyncGenerator[aioodbc.Connection]:
 
 @asynccontextmanager
 async def get_mssql_cursor() -> AsyncGenerator[aioodbc.Cursor]:
+    """Get a SQL Server async cursor."""
     async with get_mssql_connection() as conn:
         cursor = await conn.cursor()
         try:

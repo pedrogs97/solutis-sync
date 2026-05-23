@@ -11,7 +11,7 @@ from core.config import get_settings
 
 _settings = get_settings()
 
-router = APIRouter()
+router = APIRouter(prefix="/api/v1/sync", tags=["Sync"])
 
 
 @router.get("/health", tags=["Health"])

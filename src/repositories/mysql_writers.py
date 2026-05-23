@@ -24,6 +24,17 @@ from models.mysql_models import (
     NationalityTOTVS,
     SyncRecord,
 )
+from schemas.entities import (
+    Asset,
+    AssetType,
+    CostCenter,
+    EducationalLevel,
+    Employee,
+    EmployeeRole,
+    Gender,
+    MaritalStatus,
+    Nationality,
+)
 
 T = TypeVar("T", bound=BaseModel)
 _ORM = TypeVar("_ORM", bound=SQLModel)
@@ -104,47 +115,47 @@ class _GenericMySQLWriter[Entity: BaseModel, ORM: SQLModel]:
 # ── Concrete writers ─────────────────────────────────────────────────
 
 
-class CostCenterWriter(_GenericMySQLWriter):
+class CostCenterWriter(_GenericMySQLWriter[CostCenter, CostCenterTOTVS]):
     def __init__(self) -> None:
         super().__init__(CostCenterTOTVS)
 
 
-class AssetTypeWriter(_GenericMySQLWriter):
+class AssetTypeWriter(_GenericMySQLWriter[AssetType, AssetTypeTOTVS]):
     def __init__(self) -> None:
         super().__init__(AssetTypeTOTVS)
 
 
-class AssetWriter(_GenericMySQLWriter):
+class AssetWriter(_GenericMySQLWriter[Asset, AssetTOTVS]):
     def __init__(self) -> None:
         super().__init__(AssetTOTVS)
 
 
-class MaritalStatusWriter(_GenericMySQLWriter):
+class MaritalStatusWriter(_GenericMySQLWriter[MaritalStatus, MaritalStatusTOTVS]):
     def __init__(self) -> None:
         super().__init__(MaritalStatusTOTVS)
 
 
-class GenderWriter(_GenericMySQLWriter):
+class GenderWriter(_GenericMySQLWriter[Gender, GenderTOTVS]):
     def __init__(self) -> None:
         super().__init__(GenderTOTVS)
 
 
-class NationalityWriter(_GenericMySQLWriter):
+class NationalityWriter(_GenericMySQLWriter[Nationality, NationalityTOTVS]):
     def __init__(self) -> None:
         super().__init__(NationalityTOTVS)
 
 
-class EmployeeRoleWriter(_GenericMySQLWriter):
+class EmployeeRoleWriter(_GenericMySQLWriter[EmployeeRole, EmployeeRoleTOTVS]):
     def __init__(self) -> None:
         super().__init__(EmployeeRoleTOTVS)
 
 
-class EducationalLevelWriter(_GenericMySQLWriter):
+class EducationalLevelWriter(_GenericMySQLWriter[EducationalLevel, EducationalLevelTOTVS]):
     def __init__(self) -> None:
         super().__init__(EducationalLevelTOTVS)
 
 
-class EmployeeWriter(_GenericMySQLWriter):
+class EmployeeWriter(_GenericMySQLWriter[Employee, EmployeeTOTVS]):
     def __init__(self) -> None:
         super().__init__(EmployeeTOTVS)
 

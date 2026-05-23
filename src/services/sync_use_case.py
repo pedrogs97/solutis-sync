@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Sequence
 from time import perf_counter
+from typing import Any
 
 from loguru import logger
 
@@ -117,7 +118,7 @@ class SyncUseCase:
         reader = self._readers[name]
         writer = self._writers[name]
 
-        entities: Sequence = await reader.fetch_all()
+        entities: Sequence[Any] = await reader.fetch_all()
         count = await writer.upsert_many(entities)
 
         elapsed = perf_counter() - start
