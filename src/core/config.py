@@ -1,4 +1,4 @@
-"""Application settings – loaded from environment / .env file."""
+"""Application settings - loaded from environment / .env file."""
 
 from __future__ import annotations
 
@@ -8,9 +8,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", extra="ignore"
-    )
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     # ── MySQL (monolith) ─────────────────────────────────────────────
     mysql_user: str = "root"
@@ -19,10 +17,9 @@ class Settings(BaseSettings):
     mysql_port: int = 3306
     mysql_database: str = "solutis"
 
-    # ── SQL Server 17 (TOTVS – read-only) ────────────────────────────
+    # ── SQL Server 17 (TOTVS - read-only) ────────────────────────────
     mssql_dsn: str = (
-        "DRIVER={ODBC Driver 17 for SQL Server};"
-        "SERVER=127.0.0.1;DATABASE=totvs;UID=sa;PWD=sa"
+        "DRIVER={ODBC Driver 17 for SQL Server};" "SERVER=127.0.0.1;DATABASE=totvs;UID=sa;PWD=sa"
     )
 
     # ── Scheduler ────────────────────────────────────────────────────

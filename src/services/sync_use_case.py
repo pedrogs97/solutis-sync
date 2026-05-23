@@ -1,13 +1,14 @@
-"""Application use-case – orchestrates the full TOTVS → MySQL sync."""
+"""Application use-case - orchestrates the full TOTVS -> MySQL sync."""
 
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Sequence
 from time import perf_counter
-from typing import Sequence
 
 from loguru import logger
 
+from repositories.protocols import ReaderRepository, SyncMetadataWriter, WriterRepository
 from schemas.entities import (
     Asset,
     AssetType,
@@ -19,7 +20,6 @@ from schemas.entities import (
     MaritalStatus,
     Nationality,
 )
-from repositories.protocols import ReaderRepository, SyncMetadataWriter, WriterRepository
 
 
 class SyncUseCase:
@@ -103,7 +103,7 @@ class SyncUseCase:
         for key, task in tasks.items():
             results[key] = task.result()
 
-        # Phase 2: core entities (sequential – depend on lookups)
+        # Phase 2: core entities (sequential - depend on lookups)
         results["asset"] = await self._sync_entity("asset")
         results["employee"] = await self._sync_entity("employee")
 

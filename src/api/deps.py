@@ -1,9 +1,7 @@
-"""Dependency injection – wires readers, writers, and use-cases together."""
+"""Dependency injection - wires readers, writers, and use-cases together."""
 
 from __future__ import annotations
 
-from services.delete_orphan_assets import DeleteOrphanAssetsUseCase
-from services.sync_use_case import SyncUseCase
 from repositories.mysql_writers import (
     AssetTypeWriter,
     AssetWriter,
@@ -28,11 +26,13 @@ from repositories.totvs_readers import (
     MaritalStatusReader,
     NationalityReader,
 )
+from services.delete_orphan_assets import DeleteOrphanAssetsUseCase
+from services.sync_use_case import SyncUseCase
 
 
 def build_sync_use_case() -> SyncUseCase:
     return SyncUseCase(
-        # readers (TOTVS – SQL Server)
+        # readers (TOTVS - SQL Server)
         employee_reader=EmployeeReader(),
         marital_status_reader=MaritalStatusReader(),
         gender_reader=GenderReader(),

@@ -1,6 +1,8 @@
-"""Application use-case – removes assets that no longer exist in TOTVS."""
+"""Application use-case - removes assets that no longer exist in TOTVS."""
 
 from __future__ import annotations
+
+from typing import Protocol, runtime_checkable
 
 from loguru import logger
 
@@ -17,7 +19,7 @@ class DeleteOrphanAssetsUseCase:
     def __init__(
         self,
         asset_writer: WriterRepository[Asset],
-        existence_checker: "AssetExistenceCheckerProtocol",
+        existence_checker: AssetExistenceCheckerProtocol,
     ) -> None:
         self._writer = asset_writer
         self._checker = existence_checker
@@ -44,8 +46,6 @@ class DeleteOrphanAssetsUseCase:
 
 
 # ── Protocol for existence check (dependency inversion) ──────────
-
-from typing import Protocol, runtime_checkable
 
 
 @runtime_checkable

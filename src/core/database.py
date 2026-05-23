@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
 
 import aioodbc  # type: ignore[import-untyped]
 from sqlalchemy.ext.asyncio import create_async_engine
@@ -32,15 +32,16 @@ async def init_mysql_tables() -> None:
 
 
 @asynccontextmanager
-async def get_mysql_session() -> AsyncGenerator[SQLModelAsyncSession, None]:
+async def get_mysql_session() -> AsyncGenerator[SQLModelAsyncSession]:
     async with SQLModelAsyncSession(mysql_engine, expire_on_commit=False) as session:
         yield session
 
 
 # ── SQL Server async connection (read-only via aioodbc) ──────────────
 
+
 @asynccontextmanager
-async def get_mssql_connection() -> AsyncGenerator[aioodbc.Connection, None]:
+async def get_mssql_connection() -> AsyncGenerator[aioodbc.Connection]:
     conn = await aioodbc.connect(dsn=_settings.mssql_dsn, autocommit=True)
     try:
         yield conn
@@ -49,7 +50,7 @@ async def get_mssql_connection() -> AsyncGenerator[aioodbc.Connection, None]:
 
 
 @asynccontextmanager
-async def get_mssql_cursor() -> AsyncGenerator[aioodbc.Cursor, None]:
+async def get_mssql_cursor() -> AsyncGenerator[aioodbc.Cursor]:
     async with get_mssql_connection() as conn:
         cursor = await conn.cursor()
         try:

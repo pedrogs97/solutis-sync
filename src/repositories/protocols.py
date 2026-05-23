@@ -1,22 +1,23 @@
-"""Domain protocols – PEP 695 generics for full decoupling."""
+"""Domain protocols - PEP 695 generics for full decoupling."""
 
 from __future__ import annotations
 
-from typing import Protocol, Sequence, runtime_checkable
-
+from collections.abc import Sequence
+from typing import Protocol, runtime_checkable
 
 # ── Generic type-var (PEP 695) ───────────────────────────────────────
 
+
 @runtime_checkable
 class ReaderRepository[T](Protocol):
-    """Read-only repository – typically backed by SQL Server (TOTVS)."""
+    """Read-only repository - typically backed by SQL Server (TOTVS)."""
 
     async def fetch_all(self) -> Sequence[T]: ...
 
 
 @runtime_checkable
 class WriterRepository[T](Protocol):
-    """Read/Write repository – typically backed by MySQL."""
+    """Read/Write repository - typically backed by MySQL."""
 
     async def upsert(self, entity: T) -> None: ...
 
@@ -40,7 +41,7 @@ class SyncMetadataWriter(Protocol):
 
 @runtime_checkable
 class ChecksumStore[T](Protocol):
-    """Idempotency guard – compare checksums to skip identical rows."""
+    """Idempotency guard - compare checksums to skip identical rows."""
 
     def compute(self, entity: T) -> bytes: ...
 

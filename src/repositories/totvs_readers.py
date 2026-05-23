@@ -1,12 +1,25 @@
-"""ReaderRepository implementations – SQL Server via aioodbc."""
+"""ReaderRepository implementations - SQL Server via aioodbc."""
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import datetime
-from typing import Sequence
 
 from loguru import logger
 
+from core.database import get_mssql_cursor
+from repositories.totvs_queries import (
+    SQL_GCCUSTO,
+    SQL_IGRUPOPATRIMONIO,
+    SQL_IPATRIMONIO,
+    SQL_IPATRIMONIO_EXISTS,
+    SQL_PCODESTCIVIL,
+    SQL_PCODINSTRUCAO,
+    SQL_PCODNACAO,
+    SQL_PCODSEXO,
+    SQL_PFUNCAO,
+    SQL_PPESSOA,
+)
 from schemas.entities import (
     Asset,
     AssetType,
@@ -18,22 +31,9 @@ from schemas.entities import (
     MaritalStatus,
     Nationality,
 )
-from core.database import get_mssql_cursor
-from repositories.totvs_queries import (
-    SQL_GCCUSTO,
-    SQL_IGRUPOPATRIMONIO,
-    SQL_IPATRIMONIO,
-    SQL_IPATRIMONIO_EXISTS,
-    SQL_PCODESTCIVIL,
-    SQL_PCODINSTRUCAO,
-    SQL_PCODSEXO,
-    SQL_PCODNACAO,
-    SQL_PFUNCAO,
-    SQL_PPESSOA,
-)
-
 
 # ── Helpers ──────────────────────────────────────────────────────────
+
 
 def _safe(row: dict, key: str, default: str = "") -> str:
     v = row.get(key)
@@ -41,28 +41,28 @@ def _safe(row: dict, key: str, default: str = "") -> str:
 
 
 def _get_pattern(description: str, pattern: str | None) -> str:
-    PATTERN_MAP: dict[str, str] = {
+    pattern_map: dict[str, str] = {
         "001": "PADRÃO STUDIO",
         "002": "PADRÃO ESCRITÓRIO",
     }
     if description and pattern and description.upper().startswith("MACBOOK"):
         return "MACBOOK"
-    if pattern and pattern in PATTERN_MAP.values():
+    if pattern and pattern in pattern_map.values():
         return pattern
-    return PATTERN_MAP.get(pattern or "", "")
+    return pattern_map.get(pattern or "", "")
 
 
 def _get_accessories(raw: str | None) -> str:
-    ACC_MAP: dict[str, str] = {
+    acc_map: dict[str, str] = {
         "001": "CARREGADOR",
         "002": "FONTE DE ENERGIA",
         "003": "CPU, TECLADO, MOUSE, FONTE DE ENERGIA",
     }
     if not raw:
         return ""
-    if raw in ACC_MAP.values():
+    if raw in acc_map.values():
         return raw
-    return ACC_MAP.get(raw, "")
+    return acc_map.get(raw, "")
 
 
 async def _fetch_rows(sql: str) -> list[dict]:
@@ -70,10 +70,11 @@ async def _fetch_rows(sql: str) -> list[dict]:
         await cursor.execute(sql)
         columns: list[str] = [col[0] for col in cursor.description]
         raw = await cursor.fetchall()
-        return [dict(zip(columns, row)) for row in raw]
+        return [dict(zip(columns, row, strict=False)) for row in raw]
 
 
 # ── Readers ──────────────────────────────────────────────────────────
+
 
 class EmployeeReader:
     async def fetch_all(self) -> Sequence[Employee]:
@@ -94,24 +95,26 @@ class EmployeeReader:
                 bd: datetime | None = r.get("DTNASCIMENTO")
                 adm: datetime | None = r.get("ADMISSAO")
 
-                results.append(Employee(
-                    code=_safe(r, "CODIGO"),
-                    full_name=_safe(r, "NOME"),
-                    birthday=bd.date() if bd else None,  # type: ignore[arg-type]
-                    taxpayer_identification=_safe(r, "CPF"),
-                    national_identification=_safe(r, "CARTIDENTIDADE"),
-                    nationality=_safe(r, "NACIONALIDADE"),
-                    marital_status=_safe(r, "CIVIL"),
-                    role=_safe(r, "CARGO"),
-                    status=_safe(r, "SITUACAO") or "Ativo",
-                    address=address,
-                    cell_phone=_safe(r, "TELEFONE1"),
-                    email=_safe(r, "EMAIL"),
-                    gender=_safe(r, "SEXO"),
-                    admission_date=adm.date() if adm else None,
-                    registration=_safe(r, "MATRICULA"),
-                    educational_level=_safe(r, "ESCOLARIDADE") or None,
-                ))
+                results.append(
+                    Employee(
+                        code=_safe(r, "CODIGO"),
+                        full_name=_safe(r, "NOME"),
+                        birthday=bd.date() if bd else None,  # type: ignore[arg-type]
+                        taxpayer_identification=_safe(r, "CPF"),
+                        national_identification=_safe(r, "CARTIDENTIDADE"),
+                        nationality=_safe(r, "NACIONALIDADE"),
+                        marital_status=_safe(r, "CIVIL"),
+                        role=_safe(r, "CARGO"),
+                        status=_safe(r, "SITUACAO") or "Ativo",
+                        address=address,
+                        cell_phone=_safe(r, "TELEFONE1"),
+                        email=_safe(r, "EMAIL"),
+                        gender=_safe(r, "SEXO"),
+                        admission_date=adm.date() if adm else None,
+                        registration=_safe(r, "MATRICULA"),
+                        educational_level=_safe(r, "ESCOLARIDADE") or None,
+                    )
+                )
             except Exception as exc:
                 logger.warning("Skipping employee row: {}", exc)
         return results
@@ -120,25 +123,36 @@ class EmployeeReader:
 class MaritalStatusReader:
     async def fetch_all(self) -> Sequence[MaritalStatus]:
         rows = await _fetch_rows(SQL_PCODESTCIVIL)
-        return [MaritalStatus(code=_safe(r, "CODINTERNO"), description=_safe(r, "DESCRICAO")) for r in rows]
+        return [
+            MaritalStatus(code=_safe(r, "CODINTERNO"), description=_safe(r, "DESCRICAO"))
+            for r in rows
+        ]
 
 
 class GenderReader:
     async def fetch_all(self) -> Sequence[Gender]:
         rows = await _fetch_rows(SQL_PCODSEXO)
-        return [Gender(code=_safe(r, "CODINTERNO"), description=_safe(r, "DESCRICAO")) for r in rows]
+        return [
+            Gender(code=_safe(r, "CODINTERNO"), description=_safe(r, "DESCRICAO")) for r in rows
+        ]
 
 
 class NationalityReader:
     async def fetch_all(self) -> Sequence[Nationality]:
         rows = await _fetch_rows(SQL_PCODNACAO)
-        return [Nationality(code=_safe(r, "CODINTERNO"), description=_safe(r, "DESCRICAO")) for r in rows]
+        return [
+            Nationality(code=_safe(r, "CODINTERNO"), description=_safe(r, "DESCRICAO"))
+            for r in rows
+        ]
 
 
 class EducationalLevelReader:
     async def fetch_all(self) -> Sequence[EducationalLevel]:
         rows = await _fetch_rows(SQL_PCODINSTRUCAO)
-        return [EducationalLevel(code=_safe(r, "CODINTERNO"), description=_safe(r, "DESCRICAO")) for r in rows]
+        return [
+            EducationalLevel(code=_safe(r, "CODINTERNO"), description=_safe(r, "DESCRICAO"))
+            for r in rows
+        ]
 
 
 class EmployeeRoleReader:
@@ -181,31 +195,37 @@ class AssetReader:
             try:
                 acq: datetime | None = r.get("DATAAQUISICAO")
                 grt: datetime | None = r.get("GARANTIA")
-                results.append(Asset(
-                    code=str(r["IDPATRIMONIO"]) if r.get("IDPATRIMONIO") else "",
-                    type=_safe(r, "TIPO"),
-                    cost_center=_safe(r, "CENTROCUSTO") or None,
-                    active=r.get("ATIVO") is not None and r.get("ATIVO") == 1,
-                    register_number=_safe(r, "PATRIMONIO"),
-                    description=_safe(r, "DESCRICAO"),
-                    supplier=_safe(r, "FORNECEDOR"),
-                    invoice_number=_safe(r, "NOTA"),
-                    assurance_date=grt,
-                    observations=_safe(r, "OBSERVACOES"),
-                    pattern=_get_pattern(_safe(r, "DESCRICAO"), r.get("PADRAOEQUIP01")),
-                    operational_system=_safe(r, "SISTEMAOPERACIONAL"),
-                    serial_number=_safe(r, "SERIE"),
-                    imei=_safe(r, "IMEI") or _safe(r, "IMEI02"),
-                    acquisition_date=acq,
-                    value=float(str(r.get("VALORBASE", 0)).replace(",", ".")) if r.get("VALORBASE") else 0.0,
-                    ms_office=r.get("PACOTEOFFICE") == "SIM",
-                    line_number=_safe(r, "LINHA"),
-                    operator=_safe(r, "OPERADORA01"),
-                    accessories=_get_accessories(r.get("ACESSORIOS01")),
-                    quantity=int(r["QUANTIDADE"]) if r.get("QUANTIDADE") else 0,
-                    unit=_safe(r, "UNIDADE"),
-                    depreciation=float(str(r.get("DEPRECIACAO", 0)).replace(",", ".")) if r.get("DEPRECIACAO") else 0.0,
-                ))
+                results.append(
+                    Asset(
+                        code=str(r["IDPATRIMONIO"]) if r.get("IDPATRIMONIO") else "",
+                        type=_safe(r, "TIPO"),
+                        cost_center=_safe(r, "CENTROCUSTO") or None,
+                        active=r.get("ATIVO") is not None and r.get("ATIVO") == 1,
+                        register_number=_safe(r, "PATRIMONIO"),
+                        description=_safe(r, "DESCRICAO"),
+                        supplier=_safe(r, "FORNECEDOR"),
+                        invoice_number=_safe(r, "NOTA"),
+                        assurance_date=grt,
+                        observations=_safe(r, "OBSERVACOES"),
+                        pattern=_get_pattern(_safe(r, "DESCRICAO"), r.get("PADRAOEQUIP01")),
+                        operational_system=_safe(r, "SISTEMAOPERACIONAL"),
+                        serial_number=_safe(r, "SERIE"),
+                        imei=_safe(r, "IMEI") or _safe(r, "IMEI02"),
+                        acquisition_date=acq,
+                        value=float(str(r.get("VALORBASE", 0)).replace(",", "."))
+                        if r.get("VALORBASE")
+                        else 0.0,
+                        ms_office=r.get("PACOTEOFFICE") == "SIM",
+                        line_number=_safe(r, "LINHA"),
+                        operator=_safe(r, "OPERADORA01"),
+                        accessories=_get_accessories(r.get("ACESSORIOS01")),
+                        quantity=int(r["QUANTIDADE"]) if r.get("QUANTIDADE") else 0,
+                        unit=_safe(r, "UNIDADE"),
+                        depreciation=float(str(r.get("DEPRECIACAO", 0)).replace(",", "."))
+                        if r.get("DEPRECIACAO")
+                        else 0.0,
+                    )
+                )
             except Exception as exc:
                 logger.warning("Skipping asset row: {}", exc)
         return results

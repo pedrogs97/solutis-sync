@@ -1,8 +1,9 @@
-"""WriterRepository implementations – MySQL via SQLModel async."""
+"""WriterRepository implementations - MySQL via SQLModel async."""
 
 from __future__ import annotations
 
-from typing import Sequence, TypeVar
+from collections.abc import Sequence
+from typing import TypeVar
 
 from loguru import logger
 from pydantic import BaseModel
@@ -101,6 +102,7 @@ class _GenericMySQLWriter[Entity: BaseModel, ORM: SQLModel]:
 
 
 # ── Concrete writers ─────────────────────────────────────────────────
+
 
 class CostCenterWriter(_GenericMySQLWriter):
     def __init__(self) -> None:

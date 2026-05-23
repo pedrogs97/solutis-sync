@@ -1,4 +1,4 @@
-"""Checksum utility – deterministic JSON serialisation."""
+"""Checksum utility - deterministic JSON serialisation."""
 
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ def _default(obj: Any) -> str:
 
 def compute_checksum(entity: BaseModel) -> bytes:
     """Return a stable SHA-256 digest for any Pydantic model."""
-    payload = json.dumps(
-        entity.model_dump(), sort_keys=True, indent=2, default=_default
-    ).encode("utf-8")
+    payload = json.dumps(entity.model_dump(), sort_keys=True, indent=2, default=_default).encode(
+        "utf-8"
+    )
     return hashlib.sha256(payload).digest()

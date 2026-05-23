@@ -1,30 +1,30 @@
-"""solutis-sync – FastAPI application entrypoint."""
+"""solutis-sync - FastAPI application entrypoint."""
 
 from __future__ import annotations
 
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
 
 from fastapi import FastAPI
 from loguru import logger
 
 from api.routes import router as api_router
+from core.config import get_settings
 from core.database import init_mysql_tables
 from core.scheduler import configure_scheduler
-from core.config import get_settings
 
 _settings = get_settings()
 
 
 @asynccontextmanager
-async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
+async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:
     logger.info("🚀 {} starting …", _settings.app_name)
     await init_mysql_tables()
 
     _scheduler = configure_scheduler()
     _scheduler.start()
     logger.info(
-        "📅 Scheduler running – cron {}:{:02d}",
+        "📅 Scheduler running - cron {}:{:02d}",
         _settings.sync_cron_hour,
         _settings.sync_cron_minute,
     )

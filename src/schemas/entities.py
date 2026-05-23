@@ -1,9 +1,8 @@
-"""Domain entities – pure data, no ORM dependency."""
+"""Domain entities - pure data, no ORM dependency."""
 
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -13,6 +12,7 @@ class _Base(BaseModel):
 
 
 # ── Lookup / reference entities ──────────────────────────────────────
+
 
 class CostCenter(_Base):
     code: str
@@ -53,6 +53,7 @@ class EducationalLevel(_Base):
 
 # ── Core entities ────────────────────────────────────────────────────
 
+
 class Employee(_Base):
     code: str
     full_name: str
@@ -67,28 +68,28 @@ class Employee(_Base):
     cell_phone: str
     email: str
     gender: str
-    admission_date: Optional[date] = None
+    admission_date: date | None = None
     registration: str
-    educational_level: Optional[str] = None
+    educational_level: str | None = None
 
 
 class Asset(_Base):
     code: str
     type: str
-    cost_center: Optional[str] = None
+    cost_center: str | None = None
     active: bool
     register_number: str
     description: str
     supplier: str
     invoice_number: str
-    assurance_date: Optional[datetime] = None
+    assurance_date: datetime | None = None
     observations: str
     discard_reason: str = ""
     pattern: str
     operational_system: str
     serial_number: str
     imei: str
-    acquisition_date: Optional[datetime] = None
+    acquisition_date: datetime | None = None
     value: float
     ms_office: bool
     line_number: str
@@ -101,6 +102,7 @@ class Asset(_Base):
 
 
 # ── Sync metadata ────────────────────────────────────────────────────
+
 
 class SyncRecord(_Base):
     model_config = ConfigDict(str_strip_whitespace=True, extra="ignore", frozen=False)

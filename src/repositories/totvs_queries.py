@@ -1,4 +1,4 @@
-"""Raw SQL queries executed against SQL Server 17 (TOTVS – read-only)."""
+"""Raw SQL queries executed against SQL Server 17 (TOTVS - read-only)."""
 
 from __future__ import annotations
 
@@ -75,6 +75,4 @@ LEFT JOIN (
 WHERE (p.CODCOLIGADA = 1)
 """
 
-SQL_IPATRIMONIO_EXISTS: str = (
-    "SELECT IDPATRIMONIO FROM IPATRIMONIO WHERE IDPATRIMONIO = ?"
-)
+SQL_IPATRIMONIO_EXISTS: str = "SELECT IDPATRIMONIO FROM IPATRIMONIO WHERE IDPATRIMONIO = ?"
