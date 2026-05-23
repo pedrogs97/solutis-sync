@@ -43,14 +43,19 @@ _ORM = TypeVar("_ORM", bound=SQLModel)
 class _GenericMySQLWriter[Entity: BaseModel, ORM: SQLModel]:
     """Generic upsert writer with checksum-based idempotency."""
 
-    def __init__(self, orm_cls: type[ORM]) -> None:
+    def __init__(self, orm_cls: type[ORM], entity_cls: type[Entity]) -> None:
         self._orm = orm_cls
+        self._entity_cls = entity_cls
 
-    async def get_by_code(self, code: str) -> ORM | None:
+    async def get_by_code(self, code: str) -> Entity | None:
         async with get_mysql_session() as session:
             stmt = select(self._orm).where(self._orm.code == code)  # type: ignore[attr-defined]
             result = await session.exec(stmt)
-            return result.first()
+            record = result.first()
+            if record is None:
+                return None
+            record_dict = {k: v for k, v in record.model_dump().items() if k != "id"}
+            return self._entity_cls(**record_dict)
 
     async def get_all_codes(self) -> Sequence[str]:
         async with get_mysql_session() as session:
@@ -62,9 +67,7 @@ class _GenericMySQLWriter[Entity: BaseModel, ORM: SQLModel]:
         existing = await self.get_by_code(entity.code)  # type: ignore[attr-defined]
         if existing is None:
             return True
-        existing_dict = {k: v for k, v in existing.model_dump().items() if k != "id"}
-        existing_entity = type(entity)(**existing_dict)
-        return compute_checksum(entity) != compute_checksum(existing_entity)
+        return compute_checksum(entity) != compute_checksum(existing)
 
     async def upsert(self, entity: Entity) -> None:
         if not await self._has_changed(entity):
@@ -117,47 +120,47 @@ class _GenericMySQLWriter[Entity: BaseModel, ORM: SQLModel]:
 
 class CostCenterWriter(_GenericMySQLWriter[CostCenter, CostCenterTOTVS]):
     def __init__(self) -> None:
-        super().__init__(CostCenterTOTVS)
+        super().__init__(CostCenterTOTVS, CostCenter)
 
 
 class AssetTypeWriter(_GenericMySQLWriter[AssetType, AssetTypeTOTVS]):
     def __init__(self) -> None:
-        super().__init__(AssetTypeTOTVS)
+        super().__init__(AssetTypeTOTVS, AssetType)
 
 
 class AssetWriter(_GenericMySQLWriter[Asset, AssetTOTVS]):
     def __init__(self) -> None:
-        super().__init__(AssetTOTVS)
+        super().__init__(AssetTOTVS, Asset)
 
 
 class MaritalStatusWriter(_GenericMySQLWriter[MaritalStatus, MaritalStatusTOTVS]):
     def __init__(self) -> None:
-        super().__init__(MaritalStatusTOTVS)
+        super().__init__(MaritalStatusTOTVS, MaritalStatus)
 
 
 class GenderWriter(_GenericMySQLWriter[Gender, GenderTOTVS]):
     def __init__(self) -> None:
-        super().__init__(GenderTOTVS)
+        super().__init__(GenderTOTVS, Gender)
 
 
 class NationalityWriter(_GenericMySQLWriter[Nationality, NationalityTOTVS]):
     def __init__(self) -> None:
-        super().__init__(NationalityTOTVS)
+        super().__init__(NationalityTOTVS, Nationality)
 
 
 class EmployeeRoleWriter(_GenericMySQLWriter[EmployeeRole, EmployeeRoleTOTVS]):
     def __init__(self) -> None:
-        super().__init__(EmployeeRoleTOTVS)
+        super().__init__(EmployeeRoleTOTVS, EmployeeRole)
 
 
 class EducationalLevelWriter(_GenericMySQLWriter[EducationalLevel, EducationalLevelTOTVS]):
     def __init__(self) -> None:
-        super().__init__(EducationalLevelTOTVS)
+        super().__init__(EducationalLevelTOTVS, EducationalLevel)
 
 
 class EmployeeWriter(_GenericMySQLWriter[Employee, EmployeeTOTVS]):
     def __init__(self) -> None:
-        super().__init__(EmployeeTOTVS)
+        super().__init__(EmployeeTOTVS, Employee)
 
 
 class SyncMetadataWriterImpl:

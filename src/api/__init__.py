@@ -1,1 +1,1 @@
-"""API endpoints and dependencies."""
+"""API versions router and dependency injection."""

@@ -6,7 +6,7 @@ from fastapi import APIRouter, BackgroundTasks
 from fastapi.responses import JSONResponse
 from loguru import logger
 
-from api.deps import build_delete_orphan_use_case, build_sync_use_case
+from api.v1.deps import build_delete_orphan_use_case, build_sync_use_case
 from core.config import get_settings
 
 _settings = get_settings()

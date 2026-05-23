@@ -22,7 +22,7 @@ class Settings(BaseSettings):
 
     # ── SQL Server 17 (TOTVS - read-only) ────────────────────────────
     mssql_dsn: str = (
-        "DRIVER={ODBC Driver 17 for SQL Server};" "SERVER=127.0.0.1;DATABASE=totvs;UID=sa;PWD=sa"
+        "DRIVER={ODBC Driver 17 for SQL Server};SERVER=127.0.0.1;DATABASE=totvs;UID=sa;PWD=sa"
     )
 
     # ── Scheduler ────────────────────────────────────────────────────

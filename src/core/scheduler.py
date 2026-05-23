@@ -5,7 +5,7 @@ from __future__ import annotations
 from apscheduler.schedulers.asyncio import AsyncIOScheduler  # type: ignore[import-untyped]
 from loguru import logger
 
-from api.deps import build_delete_orphan_use_case, build_sync_use_case
+from api.v1.deps import build_delete_orphan_use_case, build_sync_use_case
 from core.config import get_settings
 
 _settings = get_settings()

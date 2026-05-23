@@ -8,7 +8,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from loguru import logger
 
-from api.routes import router as api_router
+from api.v1.routes import router as api_router
 from core.config import get_settings
 from core.database import init_mysql_tables
 from core.logging import setup_logger
